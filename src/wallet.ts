@@ -17,24 +17,29 @@ import prompts from "prompts";
 
 export const save = async (wallet: Wallet, filename: string) => {
     // create encrypted structured
-    const password = await prompts({
-        type: "password",
-        name: "value",
-        message: "new password",
-    });
+    let pwd = process.env.DEFAULT_WALLET_PASSWORD;
+    if !pwd {
+        const password = await prompts({
+            type: "password",
+            name: "value",
+            message: "new password",
+        });
 
-    const passwordRepeat = await prompts({
-        type: "password",
-        name: "value",
-        message: "re-type password",
-    });
+        const passwordRepeat = await prompts({
+            type: "password",
+            name: "value",
+            message: "re-type password",
+        });
 
-    // check if passwords match, raise error if not
-    if (password.value !== passwordRepeat.value) {
-        throw new Error("passwords don't match");
+        // check if passwords match, raise error if not
+        if (password.value !== passwordRepeat.value) {
+            throw new Error("passwords don't match");
+        }
+
+        pwd = password.value;
     }
 
-    const json = await wallet.encrypt(password.value);
+    const json = await wallet.encrypt(pwd);
 
     // save key V3
     log.info(`saving encrypted wallet to ${filename}`);
